@@ -1,57 +1,23 @@
 {
-  "_from": "@mr_chick/vue_laravel_echo",
-  "_id": "@mr_chick/vue_laravel_echo@1.0.0",
-  "_inBundle": false,
-  "_integrity": "sha512-feJDXVV+bm+XX2uGREcOBCuQ3164WGoVyZ55RUpHAmkea9UlO5Pd+ufVePKLSM05ewxRZnTagi/W2BvoJoZULg==",
-  "_location": "/@mr_chick/vue_laravel_echo",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "tag",
-    "registry": true,
-    "raw": "@mr_chick/vue_laravel_echo",
-    "name": "@mr_chick/vue_laravel_echo",
-    "escapedName": "@mr_chick%2fvue_laravel_echo",
-    "scope": "@mr_chick",
-    "rawSpec": "",
-    "saveSpec": null,
-    "fetchSpec": "latest"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/@mr_chick/vue_laravel_echo/-/vue_laravel_echo-1.0.0.tgz",
-  "_shasum": "921a6ec6482a64cfc8e8dd0a431c62ae915f1067",
-  "_spec": "@mr_chick/vue_laravel_echo",
-  "_where": "/media/puiucristian/",
-  "author": {
-    "name": "Puiu Cristian"
-  },
-  "bugs": {
-    "url": "https://github.com/mr-chick/vue_laravel_echo/issues"
-  },
   "bundleDependencies": false,
   "deprecated": false,
-  "description": "A wrapper (and more)  for the laravel-echo package",
-  "homepage": "https://github.com/mr-chick/vue_laravel_echo#readme",
+  "description": "A wrapper for axios calls. It helps you set up your API structure",
+  "homepage": "https://github.com/mr-chick/vue_axios#readme",
   "keywords": [
-    "laravel-echo",
+    "axios",
     "vue",
     "vue.js",
-    "socketio"
+    "REST",
+    "RESTful"
   ],
   "license": "MIT",
   "main": "dist/build.js",
-  "name": "@mr_chick/vue_laravel_echo",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mr-chick/vue_laravel_echo.git"
-  },
+  "name": "@mr_chick/vue_axios",
   "scripts": {
     "test": "test",
     "build": "webpack --mode production"
   },
-  "version": "1.0.10",
+  "version": "1.0.0",
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.32",
@@ -64,6 +30,10 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
-    "laravel-echo": "^1.4.0"
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.51",
+    "@babel/runtime": "^7.0.0-beta.51",
+    "await-to-js": "^2.0.1",
+    "axios": "^0.18.0",
+    "babel-polyfill": "^6.26.0"
   }
 }

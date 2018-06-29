@@ -1,14 +1,14 @@
 const path = require('path');
 
 module.exports = {
-  entry: './index.js',
+  entry: ["babel-polyfill", "./index.js"],
   output: {
         path: path.resolve('../dist'),
         filename: 'build.js',
-        library: 'vue_laravel_echo',
+        library: 'vue_axios',
         libraryTarget: 'commonjs2'
       },
-  mode: 'production',
+  mode: 'development',
   module: {
     rules: [
       {

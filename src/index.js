@@ -1,21 +1,19 @@
+import axios from 'axios';
+import to from 'await-to-js';
+
 /**
  * Main object
  */
 
-import echo from 'laravel-echo'
-import echoStore from './store/';
-
-const vue_laravel_echo = class VLE {
-
-  constructor(echo) {
-    this.rawEcho = echo;
-    this.debug = false;
+const vue_axios = class VueAxios {
+  constructor(axios) {
+    this.axios = axios
+    this.debug = true;
+    this.endpoints = {};
     this.options = {
-      'host': '',
-      'auth': null,
-      'broadcaster': {},
-      'pusher_key': null
-    }
+      'base': '/',
+      'default_headers': {}
+    };
   }
 
 
@@ -30,7 +28,9 @@ const vue_laravel_echo = class VLE {
     }
 
     this.initialize(settings);
-    Vue.prototype.$echo = this;
+    Vue.prototype.$api = this;
+
+
   }
 
   // /**
@@ -38,135 +38,131 @@ const vue_laravel_echo = class VLE {
   //  */
 
   initialize (settings) {
-    // set debugger
-    if (settings.debug && typeof settings.debug === "boolean") this.debug = settings.debug;
-    this.showDebug("initializing!");
 
-    // set broadcaster
-    if (settings.broadcaster && typeof settings.broadcaster === "object") {
-      this.options.broadcaster.name = settings.broadcaster.name;
-      // this.options.broadcaster.object = settings.broadcaster.object
-    }
-    this.showDebug("Broadcaster set to ", this.options.broadcaster.name);
+    if(typeof settings === "object") {
+      // set debugger
+      if (settings.debug && typeof settings.debug === "boolean") {
+        this.debug = settings.debug;
+        this.showDebug("debug is set to ", this.debug); 
+      }
+      
+      this.showDebug("initializing!");
 
-    // set host
-    if (settings.host && typeof settings.host === "string") {
-      this.options.host = settings.host
-    }
-    this.showDebug("Host set to ",this.options.host)
+      // loop through the settings
 
-    // set auth headers
-    if (settings.auth && typeof settings.auth === 'object' && settings.auth.headers && typeof settings.auth.headers === "object") {
-      for (let [header, value] of Object.entries(settings.auth.headers)) {
-          this.addAuthHeader(header,value)
-          this.showDebug("Auth header set to ", header + value);
-      } 
-    }
-
-    // set the store
-    if (settings.store && typeof settings.store === 'object') {
-      this.store = settings.store
-      this.showDebug('echo store', echoStore);
-      this.store.registerModule(['echo'], echoStore)
-    }
-    this.showDebug('Store is set to ', this.store)
-
-    let options = {
-      broadcaster: this.options.broadcaster.name,
-      host: this.options.host,
+      for (const [key, value] of Object.entries(settings)) {
+        this.showDebug('switching value of ',[key,value]);
+        switch(key) {
+          case 'base': this.setBase(value); break;
+          case 'endpoints': this.setEndpoints(value); break;
+          case 'default_headers': 
+          if(typeof value === "object") {
+            this.setDefaultHeaders(value);
+          };
+          break;
+        }
+      }
     }
 
-    if (this.options.auth) options.auth = this.options.auth;
-
-    this.echo = new this.rawEcho(options);
-    this.showDebug("echo set to ", this.echo);
-
+    // this.echo = new this.rawEcho(options);
+    // this.showDebug("echo set to ", this.echo);
   }
 
   /**
- * private
- */
-
-  private (channel) {
-    this.showDebug("Joining private channel " + channel);
-    const response = this.echo.private(channel);
-    this.store.dispatch('echo/addChannel', channel);
-    return response;
-  }
-
-  /**
-   * public 
+   * Sets the endpoints
    */
 
-  public (channel) {
-    return this.echo.channel(channel)
-  }
-
-  channel (channel ) {
-    this.showDebug("Joining public channel " + channel);
-    const response = this.echo.private(channel);
-    this.store.dispatch('echo/addChannel', channel);
-    return response;
-  }
-
-   /** 
-   * leave a channel
-   */
-
-  leave (channel) {
-    this.showDebug("Leaving channel " + channel);
-    const response = this.echo.leave(channel);
-    this.showDebug(response);
-    return response;
-  }
-
-
-  /**
- * Add auth header
- */
-
-  addAuthHeader (header, value) {
-    if (!this.options.auth) this.options.auth = {}
-    if (!this.options.auth.headers) this.options.auth.headers = {}
-
-    this.options.auth.headers[header] = value
-  }
-
-  addAuthToken (token) {
-    // check if object is set
-    if (this.echo.connector._defaultOptions.auth) {
-      this.echo.connector._defaultOptions.auth.headers['Authorization'] = 'Bearer ' + token;
+  setEndpoints(endpoints) {
+    for (const [path, endpoint] of Object.entries(endpoints)) {
+      this.endpoints[path] = endpoint
     }
-    this.showDebug('settings auth token to ', token);
+
+    this.showDebug('endpoints', this.endpoints);
   }
 
   /**
- * List channels
- */
-
-  channels () {
-    return Object.getOwnPropertyNames(this.echo.connector.channels)
-  }
-
-  /**
-   * Status
+   * replaces curly braces with the actual parameters
    */
 
-  isConnected () { 
-    return this.echo.connector.socket.connected; 
+  genUrl(url, params = {}) {
+    const replacer = (match) => {
+      match = match.substring(1, match.length-1);
+
+      this.showDebug('gen url params', params);
+      // special values as base will be replaced with their specific value
+      switch(match) {
+        case 'base': return this.options.base;
+      }
+
+      return params[match] || '-'
+    }
+
+    this.showDebug('url params ', params)
+    return url.replace(/\{([^}]+)\}/gi, replacer);
+  }
+  
+  /** 
+   * sets the bae of the axios calls
+   */
+
+  setBase(base) {
+    this.showDebug("setting base to ", base);
+    this.options.base = base;
   }
 
+  /**
+   * Set default headers
+   */
+
+  setDefaultHeaders(headers) {
+    for (const [key, value] of Object.entries(headers)) {
+      this.options.default_headers[key] = value;
+      this.axios.defaults.headers.common[key] = value;
+    };
+  }
+
+  request({endpoint, payload}) {
+    // check if endpoint exists
+    return new Promise((resolve, reject) => {
+      // check if endpoint exists
+      if(!this.endpoints[endpoint.name]) reject({ 'error' : { 'type' : 'missing_endpoint'}})
+      
+      // else, resolve the link
+      let url = this.genUrl(this.endpoints[endpoint.name].url, endpoint.params)
+      
+      // build the request
+
+      let request = {
+        'base': this.endpoints[endpoint.name].base || this.options.base, 
+        'method': this.endpoints[endpoint.name].method,
+        'url': url,
+        'headers': {} // ?
+      }
+
+      this.showDebug(request);
+
+      // makes the axios call
+
+      this.axios[request.method](request.base + request.url, payload, request.headers)
+      .then((response) => {
+        resolve(response)
+      })
+      .catch((error) => {
+        reject({'error': { 'type': 'axios_catch_error', 'response': error}})
+      })
+    });
+  }
   /** 
    * Debug
    */
 
-  showDebug (string, data = null) {
+  showDebug (string, data = '') {
     if(this.debug) console.log(string, data)
   }
 };
 
 
-export default new vue_laravel_echo(echo, echoStore)
+export default new vue_axios(axios)
 
 
 
