@@ -3,6 +3,7 @@
 This is a wrapper for the **axios**, with some helpers to make your REST API easier to manage.
 
 This is still *work in progress*, but the basic works.
+
 ### Install
 
 #### Install the package 
