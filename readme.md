@@ -65,7 +65,7 @@ let endpoints = {
 export default endpoints
 ```
 
-### Resquesting
+### Requesting
 
 #### You can make a request by calling `this.$api.request`
 

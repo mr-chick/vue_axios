@@ -13,6 +13,10 @@
   ],
   "license": "MIT",
   "main": "dist/build.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mr-chick/vue_axios.git"
+  },
   "name": "@mr_chick/vue_axios",
   "scripts": {
     "test": "test",
