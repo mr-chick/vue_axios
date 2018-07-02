@@ -3,6 +3,7 @@
   "deprecated": false,
   "description": "A wrapper for axios calls. It helps you set up your API structure",
   "homepage": "https://github.com/mr-chick/vue_axios#readme",
+  "author": "Puiu Cristian",
   "keywords": [
     "axios",
     "vue",
