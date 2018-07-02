@@ -40,19 +40,12 @@ const vue_axios = class VueAxios {
   initialize (settings) {
 
     if(typeof settings === "object") {
-      // set debugger
-      if (settings.debug && typeof settings.debug === "boolean") {
-        this.debug = settings.debug;
-        this.showDebug("debug is set to ", this.debug); 
-      }
-      
-      this.showDebug("initializing!");
-
       // loop through the settings
 
       for (const [key, value] of Object.entries(settings)) {
-        this.showDebug('switching value of ',[key,value]);
+        this.showDebug('switching value of ',[value, key])
         switch(key) {
+          case 'debug': this.setDebug(value); break;
           case 'base': this.setBase(value); break;
           case 'endpoints': this.setEndpoints(value); break;
           case 'default_headers': 
@@ -121,7 +114,14 @@ const vue_axios = class VueAxios {
     };
   }
 
-  request({endpoint, payload}) {
+  /**
+   * Sends a request
+   * 
+   * headers will be added to the request
+   */
+  request({endpoint, payload, headers = {}, params = {}}) {
+    this.showDebug("new request for "+endpoint.name);
+
     // check if endpoint exists
     return new Promise((resolve, reject) => {
       // check if endpoint exists
@@ -131,19 +131,21 @@ const vue_axios = class VueAxios {
       let url = this.genUrl(this.endpoints[endpoint.name].url, endpoint.params)
       
       // build the request
-
-      let request = {
-        'base': this.endpoints[endpoint.name].base || this.options.base, 
-        'method': this.endpoints[endpoint.name].method,
+      
+      let options = {
+        'baseURL': this.endpoints[endpoint.name].base || this.options.base, 
+        'method': this.endpoints[endpoint.name].method || 'get',
         'url': url,
-        'headers': {} // ?
+        'headers': headers,
+        'params': params,
+        'data': payload
       }
 
-      this.showDebug(request);
+      this.showDebug(options);
 
       // makes the axios call
-
-      this.axios[request.method](request.base + request.url, payload, request.headers)
+            
+      this.axios.request(options)
       .then((response) => {
         resolve(response)
       })
@@ -156,6 +158,10 @@ const vue_axios = class VueAxios {
    * Debug
    */
 
+  setDebug (value) {
+    this.debug = value;
+    this.showDebug("debug set to " + value);
+  }
   showDebug (string, data = '') {
     if(this.debug) console.log(string, data)
   }
