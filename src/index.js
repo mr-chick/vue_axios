@@ -42,7 +42,6 @@ const vue_axios = ({_axios = null } = {}) => {
     /**
      * Sets the base of the api calls
      */
-
     setBase(base) {
       if(typeof base !== 'string') { throw 'InvalidBase' }
 
@@ -58,6 +57,9 @@ const vue_axios = ({_axios = null } = {}) => {
       }
     },
 
+    /**
+     * Gets the current base
+     */
     getBase() {
       return _options.base;
     },
