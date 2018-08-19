@@ -1,174 +1,184 @@
-import axios from 'axios';
-import to from 'await-to-js';
+import _axios from 'axios';
+// import to from 'await-to-js';
 
-/**
- * Main object
- */
-
-const vue_axios = class VueAxios {
-  constructor(axios) {
-    this.axios = axios
-    this.debug = true;
-    this.endpoints = {};
-    this.options = {
-      'base': '/',
-      'default_headers': {}
-    };
+const vue_axios = ({_axios = null } = {}) => {
+  let _debug = false;
+  let _options = {
+    'base': '/',
+    'default_headers': {},
+    'endpoints': {}
   }
 
+  return {
+    /**
+     * Install function
+     */
+    install(Vue, {
+      debug = 'false',
+      base = null,
+      endpoints = null,
+      default_headers = null
+      } = {}) {
+        _debug = debug;
 
-  // /**
-  //  * Install function
-  //  */
+        if(base === null) { throw 'MissingBase'; }
+        this.setBase(base);
 
-  install (Vue, settings) {
-    // settings should be an object
-    if (typeof settings !== "object") {
-        // throw error
-    }
-
-    this.initialize(settings);
-    Vue.prototype.$api = this;
-
-
-  }
-
-  // /**
-  //  * Initializing echo
-  //  */
-
-  initialize (settings) {
-
-    if(typeof settings === "object") {
-      // loop through the settings
-
-      for (const [key, value] of Object.entries(settings)) {
-        this.showDebug('switching value of ',[value, key])
-        switch(key) {
-          case 'debug': this.setDebug(value); break;
-          case 'base': this.setBase(value); break;
-          case 'endpoints': this.setEndpoints(value); break;
-          case 'default_headers': 
-          if(typeof value === "object") {
-            this.setDefaultHeaders(value);
-          };
-          break;
+        if(endpoints) this.setEndpoints(endpoints);
+        
+        if(default_headers) {
+          this.setDefaultHeaders(default_headers);
         }
-      }
-    }
 
-    // this.echo = new this.rawEcho(options);
-    // this.showDebug("echo set to ", this.echo);
-  }
+        Vue.prototype.$api = this;
 
-  /**
-   * Sets the endpoints
-   */
+        if(_debug === true) {
+          console.log("new prototype", Vue.prototype.$api);
+        }
 
-  setEndpoints(endpoints) {
-    for (const [path, endpoint] of Object.entries(endpoints)) {
-      this.endpoints[path] = endpoint
-    }
 
-    this.showDebug('endpoints', this.endpoints);
-  }
+    },
 
-  /**
-   * replaces curly braces with the actual parameters
-   */
+    /**
+     * Sets the base of the api calls
+     */
 
-  genUrl(url, params = {}) {
-    const replacer = (match) => {
-      match = match.substring(1, match.length-1);
+    setBase(base) {
+      if(typeof base !== 'string') { throw 'InvalidBase' }
 
-      this.showDebug('gen url params', params);
-      // special values as base will be replaced with their specific value
-      switch(match) {
-        case 'base': return this.options.base;
+      if(_debug === true) {
+        console.log("debug is set to ", _debug);
+        console.log('setting base to', base)
       }
 
-      return params[match] || '-'
-    }
+      _options.base = base;
 
-    this.showDebug('url params ', params)
-    return url.replace(/\{([^}]+)\}/gi, replacer);
-  }
-  
-  /** 
-   * sets the bae of the axios calls
-   */
+      if(_debug === true) {
+        console.log('options: ', base)
+      }
+    },
 
-  setBase(base) {
-    this.showDebug("setting base to ", base);
-    this.options.base = base;
-  }
+    getBase() {
+      return _options.base;
+    },
 
-  /**
-   * Set default headers
-   */
+    /**
+     * Sets the endpoints
+     */
 
-  setDefaultHeaders(headers) {
-    for (const [key, value] of Object.entries(headers)) {
-      this.options.default_headers[key] = value;
-      this.axios.defaults.headers.common[key] = value;
-    };
-  }
+    setEndpoints(endpoints) {
+      if(typeof endpoints !== 'object') throw('InvalidEndpointsType');
 
-  /**
-   * Sends a request
-   * 
-   * headers will be added to the request
-   */
-  request({endpoint, payload, headers = {}, params = {}}) {
-    this.showDebug("new request for "+endpoint.name);
+      for (const [path, endpoint] of Object.entries(endpoints)) {
+        _options.endpoints[path] = endpoint
+      }
+    },
 
-    // check if endpoint exists
-    return new Promise((resolve, reject) => {
-      // check if endpoint exists
-      if(!this.endpoints[endpoint.name]) reject({ 'error' : { 'type' : 'missing_endpoint'}})
-      
-      // else, resolve the link
-      let url = this.genUrl(this.endpoints[endpoint.name].url, endpoint.params)
-      
-      // build the request
-      
-      let options = {
-        'baseURL': this.endpoints[endpoint.name].base || this.options.base, 
-        'method': this.endpoints[endpoint.name].method || 'get',
-        'url': url,
-        'headers': headers,
-        'params': params,
-        'data': payload
+    /**
+     * 
+     * @param {*} endpoint 
+     */
+
+    getEndpoint(endpoint) {
+      console.log('getEndpoint', endpoint);
+      if (typeof endpoint !== 'string') return null;      
+      return _options.endpoints[endpoint] || null;
+    },
+
+    /**
+     * Set default headers
+     */
+
+    setDefaultHeaders(headers) {
+      for (const [key, value] of Object.entries(headers)) {
+        _options.default_headers[key] = value;
+        _axios.defaults.headers.common[key] = value;
+      };
+    },
+
+    getDefaultHeaders() {
+      return _options.default_headers;
+    },
+
+      /**
+     * replaces curly braces with the actual parameters
+     */
+
+    genUrl(url, params = {}) {
+      console.log('using url', url);
+      const replacer = (match) => {
+        match = match.substring(1, match.length-1);
+
+        // special values as base will be replaced with their specific value
+        switch(match) {
+          case 'base': {
+            if(_debug === true) {
+              console.log("matching base against", _options);
+            }
+            return _options.base;
+          }
+        }
+
+        return params[match] || '-'
       }
 
-      this.showDebug(options);
+      // check
+      url = url.replace(/\{([^}]+)\}/gi, replacer);
+      return (url.substring(0,2) === "//") ? url.substr(1) : url; 
+    },
+
+    /**
+     * Sends a request
+     * 
+     * headers will be added to the request
+     * @param endpoint { 'endpoint' : { 'name': string, 'params': object }}
+     * @param headers object
+     * @params object
+     */
+    request({endpoint = {}, payload = {}, headers = {}, params = {}} = {}) {
+      return new Promise((resolve, reject) => {
+      
+        //todopc: add moretestes for this
+        // endpoint should have name
+        let endpointForRequest = this.getEndpoint(endpoint.name);
+
+        if(endpointForRequest === null) reject({ 'error' : { 'type' : 'missing_endpoint'}})
+
+
+        // check if endpoint exists
+        if(endpointForRequest === null) reject({ 'error' : { 'type' : 'missing_endpoint'}})
+      
+        // else, resolve the link
+        let url = this.genUrl(endpointForRequest.url, endpoint.params);
+
+
+        // build the request
+        let options = {
+          'baseURL': endpointForRequest.base || _options.base, 
+          'method': endpointForRequest.method || 'get',
+          'url': url,
+          'headers': headers,
+          'params': params,
+          'data': payload
+        }
 
       // makes the axios call
             
-      this.axios.request(options)
+      _axios.request(options)
       .then((response) => {
         resolve(response)
       })
       .catch((error) => {
         reject({'error': { 'type': 'axios_catch_error', 'response': error}})
       })
-    });
+      });
+    }
   }
-  /** 
-   * Debug
-   */
+}
 
-  setDebug (value) {
-    this.debug = value;
-    this.showDebug("debug set to " + value);
-  }
-  showDebug (string, data = '') {
-    if(this.debug) console.log(string, data)
-  }
-};
+export default vue_axios({_axios});
 
 
-export default new vue_axios(axios)
 
 
 

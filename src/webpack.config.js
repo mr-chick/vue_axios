@@ -1,14 +1,15 @@
 const path = require('path');
+const nodeExternals = require('webpack-node-externals')
 
 module.exports = {
-  entry: ["./index.js"],
+  entry: './index.js',
   output: {
         path: path.resolve('../dist'),
         filename: 'build.js',
         library: 'vue_axios',
         libraryTarget: 'commonjs2'
       },
-  mode: 'development',
+  mode: 'production',
   module: {
     rules: [
       {
@@ -19,7 +20,8 @@ module.exports = {
         }
       }
     ]
-  }, 
+  },
+  externals: [nodeExternals()]
 };
 
 // npx webpack
