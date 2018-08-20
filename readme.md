@@ -83,4 +83,4 @@ this.$api.request({
 
 ### Axios instance
 
-If you need the axios object, you can access it via `this.$api.axios`
+If you need the axios object, you can access it via `this.$api.getAxios()`

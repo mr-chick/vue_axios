@@ -174,6 +174,14 @@ const vue_axios = ({_axios = null } = {}) => {
         reject({'error': { 'type': 'axios_catch_error', 'response': error}})
       })
       });
+    },
+
+    /**
+     * Get the original axios object
+     */
+
+    getAxios() {
+      return _axios;
     }
   }
 }
