@@ -82,7 +82,6 @@ const vue_axios = ({_axios = null } = {}) => {
      */
 
     getEndpoint(endpoint) {
-      console.log('getEndpoint', endpoint);
       if (typeof endpoint !== 'string') return null;      
       return _options.endpoints[endpoint] || null;
     },
@@ -107,16 +106,12 @@ const vue_axios = ({_axios = null } = {}) => {
      */
 
     genUrl(url, params = {}) {
-      console.log('using url', url);
       const replacer = (match) => {
         match = match.substring(1, match.length-1);
 
         // special values as base will be replaced with their specific value
         switch(match) {
           case 'base': {
-            if(_debug === true) {
-              console.log("matching base against", _options);
-            }
             return _options.base;
           }
         }
