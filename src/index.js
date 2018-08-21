@@ -6,7 +6,8 @@ const vue_axios = ({_axios = null } = {}) => {
   let _options = {
     'base': '/',
     'default_headers': {},
-    'endpoints': {}
+    'endpoints': {},
+    'interceptors': {},
   }
 
   return {
@@ -177,6 +178,49 @@ const vue_axios = ({_axios = null } = {}) => {
 
     getAxios() {
       return _axios;
+    },
+
+
+    /**
+     * Add response interceptor
+     * @param name - name of interceptor
+     * @param interceptpr - function
+     */
+    addResponseInterceptor({ name, interceptor }) {
+      interceptor = { 'response': null, 'error': null, ...interceptor }; 
+      _options.interceptors[name] = _axios.interceptors.response.use(interceptor.response, interceptor.error);
+      return true;
+    },
+
+    /**
+     * Reomve an response interceptor
+     * @param name - name of the interceptor
+     */
+    removeResponseInterceptor({ name }) {
+      _axios.interceptors.response.eject(_options.interceptors[name]);
+      delete _options.interceptors[name];
+      return true;
+    },
+    
+    /**
+   * Add request interceptor
+   * @param name - name of interceptor
+   * @param interceptpr - function
+   */
+    addRequestInterceptor({ name, interceptor }) {
+      interceptor = { 'response': null, 'error': null, ...interceptor }; 
+      _options.interceptors[name] = _axios.interceptors.request.use(interceptor.response, interceptor.error);
+      return true;
+    },
+
+    /**
+     * Reomve an interceptor
+     * @param name - name of the interceptor
+     */
+    removeRequestInterceptor({ name }) {
+      _axios.interceptors.request.eject(_options.interceptors[name]);
+      delete _options.interceptors[name];
+      return true;
     }
   }
 }
