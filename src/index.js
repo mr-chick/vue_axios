@@ -26,7 +26,7 @@ const vue_axios = ({_axios = null } = {}) => {
         this.setBase(base);
 
         if(endpoints) this.setEndpoints(endpoints);
-        
+
         if(default_headers) {
           this.setDefaultHeaders(default_headers);
         }
@@ -78,12 +78,12 @@ const vue_axios = ({_axios = null } = {}) => {
     },
 
     /**
-     * 
-     * @param {*} endpoint 
+     *
+     * @param {*} endpoint
      */
 
     getEndpoint(endpoint) {
-      if (typeof endpoint !== 'string') return null;      
+      if (typeof endpoint !== 'string') return null;
       return _options.endpoints[endpoint] || null;
     },
 
@@ -122,12 +122,12 @@ const vue_axios = ({_axios = null } = {}) => {
 
       // check
       url = url.replace(/\{([^}]+)\}/gi, replacer);
-      return (url.substring(0,2) === "//") ? url.substr(1) : url; 
+      return (url.substring(0,2) === "//") ? url.substr(1) : url;
     },
 
     /**
      * Sends a request
-     * 
+     *
      * headers will be added to the request
      * @param endpoint { 'endpoint' : { 'name': string, 'params': object }}
      * @param headers object
@@ -135,7 +135,7 @@ const vue_axios = ({_axios = null } = {}) => {
      */
     request({endpoint = {}, payload = {}, headers = {}, params = {}} = {}) {
       return new Promise((resolve, reject) => {
-      
+
         //todopc: add moretestes for this
         // endpoint should have name
         let endpointForRequest = this.getEndpoint(endpoint.name);
@@ -145,14 +145,14 @@ const vue_axios = ({_axios = null } = {}) => {
 
         // check if endpoint exists
         if(endpointForRequest === null) reject({ 'error' : { 'type' : 'missing_endpoint'}})
-      
+
         // else, resolve the link
         let url = this.genUrl(endpointForRequest.url, endpoint.params);
 
 
         // build the request
         let options = {
-          'baseURL': endpointForRequest.base || _options.base, 
+          'baseURL': endpointForRequest.base || _options.base,
           'method': endpointForRequest.method || 'get',
           'url': url,
           'headers': headers,
@@ -161,7 +161,7 @@ const vue_axios = ({_axios = null } = {}) => {
         }
 
       // makes the axios call
-            
+
       _axios.request(options)
       .then((response) => {
         resolve(response)
@@ -187,7 +187,7 @@ const vue_axios = ({_axios = null } = {}) => {
      * @param interceptpr - function
      */
     addResponseInterceptor({ name, interceptor }) {
-      interceptor = { 'response': null, 'error': null, ...interceptor }; 
+      interceptor = { 'response': null, 'error': null, ...interceptor };
       _options.interceptors[name] = _axios.interceptors.response.use(interceptor.response, interceptor.error);
       return true;
     },
@@ -201,14 +201,14 @@ const vue_axios = ({_axios = null } = {}) => {
       delete _options.interceptors[name];
       return true;
     },
-    
+
     /**
    * Add request interceptor
    * @param name - name of interceptor
    * @param interceptpr - function
    */
     addRequestInterceptor({ name, interceptor }) {
-      interceptor = { 'response': null, 'error': null, ...interceptor }; 
+      interceptor = { 'response': null, 'error': null, ...interceptor };
       _options.interceptors[name] = _axios.interceptors.request.use(interceptor.response, interceptor.error);
       return true;
     },

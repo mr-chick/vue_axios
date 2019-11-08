@@ -6,7 +6,7 @@ This is still *work in progress*, but the basic works.
 
 ### Install
 
-#### Install the package 
+#### Install the package
 
 ```js
 npm i @mr_chick/vue_axios
